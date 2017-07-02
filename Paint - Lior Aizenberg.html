@@ -1,0 +1,195 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link href="css\myStyle.css" rel='stylesheet' type="text/css">
+  </head>
+  <body>
+    <script>
+    /*
+    Setting up the main components's layout -
+
+    The body --> the wrapper --> the title
+                            |
+                            --> the canvas area -> the actual canvas
+                            |
+                            --> the buttons -> the features of the buttons
+                             
+
+    */
+    var theBody = document.getElementsByTagName('body')[0];
+    var theWrapper = document.createElement('div');
+    theBody.style.marginTop = '30px';
+    theBody.style.overflow = 'hidden';
+    var canvasArea = document.createElement('div');
+    canvasArea.style.display = 'inline-block';  
+    var theButtons = document.createElement('div');
+    theButtons.style.background = 'linear-gradient(to right, #CFD8E7, #E6EBEE)';
+    theButtons.style.width = '100px';
+    theButtons.style.display = 'inline-block';
+    theButtons.style.verticalAlign = 'top';
+    theButtons.style.paddingLeft = '10px';
+    theButtons.style.paddingRight = '10px';
+    var feature = document.createElement('div');
+    var theCanvas = document.createElement('canvas');
+    theCanvas.style.border = 'solid black 1px';
+    var theTitle = document.createElement('span');
+    theTitle.innerHTML = 'Paint by Lior Aizenberg'
+
+    // appending the key elements
+    theBody.appendChild(theWrapper);
+    theWrapper.appendChild(theTitle);
+    canvasArea.appendChild(theCanvas);
+    theWrapper.appendChild(canvasArea);
+    theWrapper.appendChild(theButtons);
+    theButtons.appendChild(feature);
+
+    // setting 2D context for the canvas
+    var context = theCanvas.getContext('2d');
+   
+    /*
+    setting up the features. All features have a title span before them.
+
+    The features are -
+
+    Color palette
+    Eraser
+    Brush size - affects both the brush and the eraser
+    Fill
+    Save
+    Reset
+    (Dynamic canvas size is also a "feature", but is not implemented here)
+    */
+    var colorPickerTitle = document.createElement('span');
+    colorPickerTitle.innerHTML = 'Color Picker';
+
+    var colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+
+    var eraserTitle = document.createElement('span');
+    eraserTitle.innerHTML = 'Eraser';
+
+    var eraser = document.createElement('button');
+    eraser.style.backgroundSize = 'cover';
+    eraser.style.backgroundImage = 'url("http://www.weenysoft.com/images/icons/free-eraser.png")';
+
+    var sizeChangeTitle = document.createElement('span');
+    sizeChangeTitle.innerHTML = 'Brush Size';
+
+    var sizeUp = document.createElement('button');
+    sizeUp.style.backgroundSize = 'cover';
+    sizeUp.style.backgroundImage = 'url("http://iconshow.me/media/images/Mixed/Free-Flat-UI-Icons/png/128/plus-24-128.png")';
+
+    var sizeDown = document.createElement('button');
+    sizeDown.style.backgroundSize = 'cover';
+    sizeDown.style.backgroundImage = 'url("http://iconshow.me/media/images/ui/ios7-icons/png/128/minus_1.png")';
+    sizeDown.style.marginLeft = '30px'
+
+    var fillTitle = document.createElement('span');
+    fillTitle.innerHTML = 'Fill';
+
+    var fill = document.createElement('button');
+    fill.style.backgroundSize = 'cover';
+    fill.style.backgroundImage = 'url("http://downloadicons.net/sites/default/files/paint-bucket-icon-30117.png")';
+
+    var saveTitle = document.createElement('span');
+    saveTitle.innerHTML = 'Save';
+
+    var save = document.createElement('button');
+    save.style.backgroundSize = 'cover';
+    save.style.backgroundImage = 'url("https://qph.ec.quoracdn.net/main-qimg-f2546c924ff3178fbd0dc6e3fa4ee01f")';
+
+    var resetTitle = document.createElement('span');
+    resetTitle.innerHTML = 'Reset';
+
+    var reset = document.createElement('button');
+    reset.style.backgroundSize = 'cover';
+    reset.style.backgroundImage = 'url("https://jbebopforum.files.wordpress.com/2015/05/reset-icon-tile-256.png")';
+    
+    // appending all of the features
+    feature.appendChild(colorPickerTitle);
+    feature.appendChild(colorPicker);
+    feature.appendChild(sizeChangeTitle);
+    feature.appendChild(sizeUp);
+    feature.appendChild(sizeDown);
+    feature.appendChild(eraserTitle);
+    feature.appendChild(eraser);
+    feature.appendChild(fillTitle);
+    feature.appendChild(fill);
+    feature.appendChild(saveTitle);
+    feature.appendChild(save);
+    feature.appendChild(resetTitle);
+    feature.appendChild(reset);
+    
+    // Dynamic canvas size done by prompt when the page loads
+    theCanvas.width = prompt('Please type canvas WIDTH in pixels:', '500');
+    theCanvas.height = prompt('Please type canvas HEIGHT in pixels:', '500');
+
+    // Setting up the mouse + initial brush
+    var mouse = {x: 0, y: 0};
+     
+    theCanvas.addEventListener('mousemove', function(e) {
+      mouse.x = e.pageX - this.offsetLeft;
+      mouse.y = e.pageY - this.offsetTop;
+    }, false);
+
+    context.lineWidth = 4;
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+    context.strokeStyle = 'blue';
+    
+    // Main brush functions 
+    theCanvas.addEventListener('mousedown', function(e) {
+      context.beginPath();
+      context.moveTo(mouse.x, mouse.y);
+      theCanvas.addEventListener('mousemove', onPaint, false);
+    }, false);
+     
+    theCanvas.addEventListener('mouseup', function() {
+      theCanvas.removeEventListener('mousemove', onPaint, false);
+    }, false);
+
+    function onPaint(){
+      context.lineTo(mouse.x, mouse.y);
+      context.stroke();
+    };
+
+    // Features' functions
+    colorPicker.addEventListener('change', function(event) {
+      context.strokeStyle = event.target.value;
+    });
+    
+    eraser.addEventListener("click", function(){  
+      context.strokeStyle = '#FFFFFF';
+    });
+
+    sizeUp.addEventListener("click", function(){  
+      context.lineWidth +=1;
+    });
+
+    // Makes sure brush size doesn't go below 1px
+    sizeDown.addEventListener("click", function(){  
+      if (context.lineWidth>1){
+        context.lineWidth -=1;
+      }
+    });
+
+    fill.addEventListener("click", function(){  
+      context.fillStyle = context.strokeStyle;
+      context.fill();
+    });
+
+    save.addEventListener("click", saveImage);
+
+    function saveImage(){
+      var savedImage = theCanvas;
+      document.location.href = savedImage.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    }
+
+    reset.addEventListener('click', function() {
+        context.clearRect(0, 0, theCanvas.width, theCanvas.height);
+    }, false);
+
+    </script>
+  </body>
+</html>       
